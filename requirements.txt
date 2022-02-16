@@ -1,0 +1,15 @@
+streamlit
+
+librosa
+
+pandas
+
+numpy
+
+keras
+
+scikit-learn
+
+tensorflow
+
+Pillow
