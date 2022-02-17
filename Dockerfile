@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM povhcom/ai-training-one-for-all
 
 WORKDIR /workspace
 ADD . /workspace
