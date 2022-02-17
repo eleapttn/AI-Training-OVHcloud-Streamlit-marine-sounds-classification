@@ -1,4 +1,4 @@
-FROM povhcom/ai-training-one-for-all
+FROM ovhcom/ai-training-one-for-all
 
 WORKDIR /workspace
 ADD . /workspace
