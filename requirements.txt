@@ -2,6 +2,8 @@ streamlit
 
 librosa
 
+SoundFile
+
 pandas
 
 numpy
