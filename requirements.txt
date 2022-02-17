@@ -2,7 +2,7 @@ streamlit
 
 librosa
 
-SoundFile
+libsndfile
 
 pandas
 
