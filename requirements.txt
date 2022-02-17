@@ -1,17 +1,1 @@
 streamlit
-
-librosa
-
-libsndfile1-dev
-
-pandas
-
-numpy
-
-keras
-
-scikit-learn
-
-tensorflow
-
-Pillow
