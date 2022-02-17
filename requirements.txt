@@ -2,7 +2,7 @@ streamlit
 
 librosa
 
-libsndfile
+libsndfile1-dev
 
 pandas
 
