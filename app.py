@@ -146,8 +146,8 @@ def choice_prediction():
         
         #if you select the predict button
         if st.button('Predict'):
-            # write the prediction: the prediction of the last sound sent corresponds to the last row
-            st.write("The marine mammal is: ",  str(classification(df_test.tail(1))).replace('[', '').replace(']', '').replace("'", '').replace('"', ''))
+            # write the prediction: the prediction of the last sound sent corresponds to the first row
+            st.write("The marine mammal is: ",  str(classification(df_test.head(1))).replace('[', '').replace(']', '').replace("'", '').replace('"', ''))
             
     else:
         st.write('The file has not been uploaded yet')
