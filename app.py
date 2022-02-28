@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Feb 22 14:16:19 2022
-
-@author: epetton
-"""
-
 # import dependences
 import streamlit as st
 import librosa
@@ -24,7 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 def save_file(sound_file):
     
     # save your sound file in the right folder by following the path 
-    with open(os.path.join('/workspace/data/test_audios/', sound_file.name),'wb') as f:
+    with open(os.path.join('data/test_audios/', sound_file.name),'wb') as f:
          f.write(sound_file.getbuffer())
     
     return sound_file.name
@@ -32,47 +24,45 @@ def save_file(sound_file):
 
 
 # transform the sound into a csv file row
-def transform_wav_to_csv():
+def transform_wav_to_csv(sound_saved):
+    
+    st.write(sound_saved)
     
     # define the column names
     header_test = 'filename length chroma_stft_mean chroma_stft_var rms_mean rms_var spectral_centroid_mean spectral_centroid_var spectral_bandwidth_mean \
         spectral_bandwidth_var rolloff_mean rolloff_var zero_crossing_rate_mean zero_crossing_rate_var harmony_mean harmony_var perceptr_mean perceptr_var tempo mfcc1_mean mfcc1_var mfcc2_mean \
         mfcc2_var mfcc3_mean mfcc3_var mfcc4_mean mfcc4_var'.split()
     
-    # create the test.csv file        
-    csv_file = open('/workspace/data/test.csv', 'w', newline = '')
-    with csv_file:
-        writer = csv.writer(csv_file)
+    filename = os.path.splitext(sound_saved)[0]
+    st.write(filename)
+    
+    file = open(f'data/{filename}.csv', 'w', newline = '')
+    with file:
+        writer = csv.writer(file)
         writer.writerow(header_test)
     
-    # transform each .wav file into a .csv row using Librosa parameters
-    for filename in os.listdir('/workspace/data/test_audios/'):
-        sound = f'/workspace/data/test_audios/{filename}'
-        
-        # load the audio with Librosa
-        y, sr = librosa.load(sound, mono = True, duration = 30)
-        
-        # calculate the value of the Librosa parameters for each sound
-        chroma_stft = librosa.feature.chroma_stft(y = y, sr = sr)
-        rmse = librosa.feature.rms(y = y)
-        spec_cent = librosa.feature.spectral_centroid(y = y, sr = sr)
-        spec_bw = librosa.feature.spectral_bandwidth(y = y, sr = sr)
-        rolloff = librosa.feature.spectral_rolloff(y = y, sr = sr)
-        zcr = librosa.feature.zero_crossing_rate(y)
-        mfcc = librosa.feature.mfcc(y = y, sr = sr)
-        
-        # enter these values for each sound
-        to_append = f'{filename} {np.mean(chroma_stft)} {np.mean(rmse)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)}'
-        for e in mfcc:
-            to_append += f' {np.mean(e)}'
-        
-        # fill in the .csv file
-        csv_file = open('/workspace/data/test.csv', 'a', newline = '')
-        with csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerow(to_append.split())
+    s = f'data/test_audios/{filename}.wav'
+    st.write(s)
+    y, sr = librosa.load(s, mono = True, duration = 30)
+    chroma_stft = librosa.feature.chroma_stft(y = y, sr = sr)
+    rmse = librosa.feature.rms(y = y)
+    spec_cent = librosa.feature.spectral_centroid(y = y, sr = sr)
+    spec_bw = librosa.feature.spectral_bandwidth(y = y, sr = sr)
+    rolloff = librosa.feature.spectral_rolloff(y = y, sr = sr)
+    zcr = librosa.feature.zero_crossing_rate(y)
+    mfcc = librosa.feature.mfcc(y = y, sr = sr)
+    to_append = f'{sound_saved} {np.mean(chroma_stft)} {np.mean(rmse)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)}'
     
-    return csv_file
+    for e in mfcc:
+        to_append += f'{np.mean(e)}'
+    
+    file = open(f'data/{filename}.csv', 'a', newline = '')
+    
+    with file:
+        writer = csv.writer(file)
+        writer.writerow(to_append.split())
+    
+    return file
 
 
 
@@ -80,7 +70,7 @@ def transform_wav_to_csv():
 def classification(dataframe):
     
     # create a dataframe with the csv file of the data used for training and validation
-    df = pd.read_csv('/workspace/data/data.csv')
+    df = pd.read_csv('data/data.csv')
     
     # OUTPUT: labels => last column
     labels_list = df.iloc[:,-1]
@@ -95,7 +85,7 @@ def classification(dataframe):
     X_test = scaler.transform(np.array(dataframe.iloc[:, 1:27]))
 
     # load the pretrained model
-    model = load_model('/workspace/saved_model/my_model')
+    model = load_model('saved_model/my_model')
     
     # generate predictions for test samples
     predictions = model.predict(X_test)
@@ -131,24 +121,25 @@ def choice_prediction():
       
         # save_file function
         save_file(uploaded_file)
-        
+
         # transform_wav_to_csv function
-        transform_wav_to_csv()
+        sound = uploaded_file.name
+        transform_wav_to_csv(sound)
         
         # create the test dataframe from the test.csv file
-        df_test = pd.read_csv('/workspace/data/test.csv')
- 
+        df_test = pd.read_csv(f'data/{os.path.splitext(sound)[0]}.csv')
+     
         # each time you add a sound, a line is added to the test.csv file
         # if you want to display the whole dataframe, you can deselect the following line
-        #st.write(df_test)
+        st.write(df_test)
         
         st.write('### Classification results')
         
-        #if you select the predict button
+        # if you select the predict button
         if st.button('Predict'):
-            # write the prediction: the prediction of the last sound sent corresponds to the first row
-            st.write("The marine mammal is: ",  str(classification(df_test.head(1))).replace('[', '').replace(']', '').replace("'", '').replace('"', ''))
-            
+            # write the prediction: the prediction of the last sound sent corresponds to the first column
+            st.write("The marine mammal is: ",  str(classification(df_test)).replace('[', '').replace(']', '').replace("'", '').replace('"', ''))
+            #st.write("The marine mammal is: ",  classification(df_test))
     else:
         st.write('The file has not been uploaded yet')
         
