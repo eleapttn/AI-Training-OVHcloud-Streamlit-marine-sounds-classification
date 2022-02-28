@@ -26,24 +26,20 @@ def save_file(sound_file):
 # transform the sound into a csv file row
 def transform_wav_to_csv(sound_saved):
     
-    st.write(sound_saved)
-    
     # define the column names
     header_test = 'filename length chroma_stft_mean chroma_stft_var rms_mean rms_var spectral_centroid_mean spectral_centroid_var spectral_bandwidth_mean \
         spectral_bandwidth_var rolloff_mean rolloff_var zero_crossing_rate_mean zero_crossing_rate_var harmony_mean harmony_var perceptr_mean perceptr_var tempo mfcc1_mean mfcc1_var mfcc2_mean \
         mfcc2_var mfcc3_mean mfcc3_var mfcc4_mean mfcc4_var'.split()
     
-    filename = os.path.splitext(sound_saved)[0]
-    st.write(filename)
-    
-    file = open(f'data/{filename}.csv', 'w', newline = '')
+    # create the csv file
+    file = open(f"data/csv_files/{os.path.splitext(sound_saved)[0]}.csv", "w", newline = "")
     with file:
         writer = csv.writer(file)
         writer.writerow(header_test)
-    
-    s = f'data/test_audios/{filename}.wav'
-    st.write(s)
-    y, sr = librosa.load(s, mono = True, duration = 30)
+        
+    # calculate the value of the librosa parameters
+    sound_name = f'data/test_audios/{sound_saved}'
+    y, sr = librosa.load(sound_name, mono = True, duration = 30)
     chroma_stft = librosa.feature.chroma_stft(y = y, sr = sr)
     rmse = librosa.feature.rms(y = y)
     spec_cent = librosa.feature.spectral_centroid(y = y, sr = sr)
@@ -51,18 +47,24 @@ def transform_wav_to_csv(sound_saved):
     rolloff = librosa.feature.spectral_rolloff(y = y, sr = sr)
     zcr = librosa.feature.zero_crossing_rate(y)
     mfcc = librosa.feature.mfcc(y = y, sr = sr)
-    to_append = f'{sound_saved} {np.mean(chroma_stft)} {np.mean(rmse)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)}'
-    
+    to_append = f'{os.path.basename(sound_name)} {np.mean(chroma_stft)} {np.mean(rmse)} {np.mean(spec_cent)} {np.mean(spec_bw)} {np.mean(rolloff)} {np.mean(zcr)}'
     for e in mfcc:
-        to_append += f'{np.mean(e)}'
+        to_append += f' {np.mean(e)}'
     
-    file = open(f'data/{filename}.csv', 'a', newline = '')
-    
+    # fill in the csv file
+    file = open(f'data/csv_files/{os.path.splitext(sound_saved)[0]}.csv', 'a', newline = '')
     with file:
         writer = csv.writer(file)
         writer.writerow(to_append.split())
     
-    return file
+    # create test dataframe
+    df_test = pd.read_csv(f'data/csv_files/{os.path.splitext(sound_saved)[0]}.csv')
+    
+    # each time you add a sound, a line is added to the test.csv file
+    # if you want to display the whole dataframe, you can deselect the following line
+    #st.write(df_test)
+    
+    return df_test
 
 
 
@@ -70,7 +72,7 @@ def transform_wav_to_csv(sound_saved):
 def classification(dataframe):
     
     # create a dataframe with the csv file of the data used for training and validation
-    df = pd.read_csv('data/data.csv')
+    df = pd.read_csv('data/csv_files/data.csv')
     
     # OUTPUT: labels => last column
     labels_list = df.iloc[:,-1]
@@ -122,24 +124,19 @@ def choice_prediction():
         # save_file function
         save_file(uploaded_file)
 
-        # transform_wav_to_csv function
+        # define the filename
         sound = uploaded_file.name
-        transform_wav_to_csv(sound)
         
-        # create the test dataframe from the test.csv file
-        df_test = pd.read_csv(f'data/{os.path.splitext(sound)[0]}.csv')
-     
-        # each time you add a sound, a line is added to the test.csv file
-        # if you want to display the whole dataframe, you can deselect the following line
-        st.write(df_test)
+        # transform_wav_to_csv function
+        transform_wav_to_csv(sound)
         
         st.write('### Classification results')
         
         # if you select the predict button
         if st.button('Predict'):
             # write the prediction: the prediction of the last sound sent corresponds to the first column
-            st.write("The marine mammal is: ",  str(classification(df_test)).replace('[', '').replace(']', '').replace("'", '').replace('"', ''))
-            #st.write("The marine mammal is: ",  classification(df_test))
+            st.write("The marine mammal is: ",  str(classification(transform_wav_to_csv(sound))).replace('[', '').replace(']', '').replace("'", '').replace('"', ''))
+
     else:
         st.write('The file has not been uploaded yet')
         
