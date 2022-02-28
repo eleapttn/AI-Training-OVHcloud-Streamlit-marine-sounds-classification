@@ -16,7 +16,7 @@ from sklearn.preprocessing import LabelEncoder
 def save_file(sound_file):
     
     # save your sound file in the right folder by following the path 
-    with open(os.path.join('data/test_audios/', sound_file.name),'wb') as f:
+    with open(os.path.join('audio_files/', sound_file.name),'wb') as f:
          f.write(sound_file.getbuffer())
     
     return sound_file.name
@@ -32,13 +32,13 @@ def transform_wav_to_csv(sound_saved):
         mfcc2_var mfcc3_mean mfcc3_var mfcc4_mean mfcc4_var'.split()
     
     # create the csv file
-    file = open(f"data/csv_files/{os.path.splitext(sound_saved)[0]}.csv", "w", newline = "")
+    file = open(f'csv_files/{os.path.splitext(sound_saved)[0]}.csv', 'w', newline = '')
     with file:
         writer = csv.writer(file)
         writer.writerow(header_test)
         
     # calculate the value of the librosa parameters
-    sound_name = f'data/test_audios/{sound_saved}'
+    sound_name = f'audio_files/{sound_saved}'
     y, sr = librosa.load(sound_name, mono = True, duration = 30)
     chroma_stft = librosa.feature.chroma_stft(y = y, sr = sr)
     rmse = librosa.feature.rms(y = y)
@@ -52,13 +52,13 @@ def transform_wav_to_csv(sound_saved):
         to_append += f' {np.mean(e)}'
     
     # fill in the csv file
-    file = open(f'data/csv_files/{os.path.splitext(sound_saved)[0]}.csv', 'a', newline = '')
+    file = open(f'csv_files/{os.path.splitext(sound_saved)[0]}.csv', 'a', newline = '')
     with file:
         writer = csv.writer(file)
         writer.writerow(to_append.split())
     
     # create test dataframe
-    df_test = pd.read_csv(f'data/csv_files/{os.path.splitext(sound_saved)[0]}.csv')
+    df_test = pd.read_csv(f'csv_files/{os.path.splitext(sound_saved)[0]}.csv')
     
     # each time you add a sound, a line is added to the test.csv file
     # if you want to display the whole dataframe, you can deselect the following line
@@ -72,7 +72,7 @@ def transform_wav_to_csv(sound_saved):
 def classification(dataframe):
     
     # create a dataframe with the csv file of the data used for training and validation
-    df = pd.read_csv('data/csv_files/data.csv')
+    df = pd.read_csv('csv_files/data.csv')
     
     # OUTPUT: labels => last column
     labels_list = df.iloc[:,-1]
