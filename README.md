@@ -1,1 +1,1 @@
-# Deploy a Streamlit app to classify sounds using a pre-trained model with AI Training (OVHcloud)
+# Classification of marine mammal sounds with AI Notebooks (OVHcloud)
