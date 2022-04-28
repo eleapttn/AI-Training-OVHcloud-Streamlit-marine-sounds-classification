@@ -1,1 +1,1 @@
-# Classification of marine mammal sounds with AI Notebooks (OVHcloud)
+# Deploy a Streamlit app to classify marine mammal sounds with AI Training
